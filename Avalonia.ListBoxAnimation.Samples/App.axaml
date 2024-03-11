@@ -14,7 +14,7 @@
         <Color x:Key="SystemAccentColor">#755394</Color>
     </Application.Resources>
     <Application.Styles>
-        <FluentTheme Mode="Dark" />
+        <FluentTheme />
         <Style Selector=":is(SelectingItemsControl)">
             <Setter Property="local:SelectingItemsControlExtension.EnableSelectionAnimation" Value="True" />
         </Style>

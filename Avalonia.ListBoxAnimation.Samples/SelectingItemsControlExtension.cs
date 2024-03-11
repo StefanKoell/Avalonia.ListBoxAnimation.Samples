@@ -6,7 +6,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Rendering.Composition;
-using Avalonia.Rendering.Composition.Animations;
 
 namespace Avalonia.ListBoxAnimation.Samples;
 
@@ -62,26 +61,26 @@ public class SelectingItemsControlExtension
         ElementComposition.GetElementVisual(oldPipe)?.ImplicitAnimations?.Clear();
 
         // Get the composition visuals for all controls
-        CompositionVisual? pipeVisual = ElementComposition.GetElementVisual(borderPipe);
-        CompositionVisual? newSelectionVisual = ElementComposition.GetElementVisual(newSelection);
-        CompositionVisual? oldSelectionVisual = ElementComposition.GetElementVisual(oldSelection);
+        var pipeVisual = ElementComposition.GetElementVisual(borderPipe);
+        var newSelectionVisual = ElementComposition.GetElementVisual(newSelection);
+        var oldSelectionVisual = ElementComposition.GetElementVisual(oldSelection);
         if (pipeVisual == null || newSelectionVisual == null || oldSelectionVisual == null) return;
 
         // Calculate the offset between old and new selections
-        Vector3 selectionOffset = oldSelectionVisual.Offset - newSelectionVisual.Offset;
+        var selectionOffset = oldSelectionVisual.Offset - newSelectionVisual.Offset;
         // Check whether the offset is vertical (e.g. ListBox) or horizontal (e.g. TabControl)
         // Note this code assumes the items are aligned in the SelectingItemsControl
-        bool isVerticalOffset = selectionOffset.Y != 0;
-        float offset = isVerticalOffset ? selectionOffset.Y : selectionOffset.X;
+        var isVerticalOffset = selectionOffset.Y != 0;
+        var offset = isVerticalOffset ? selectionOffset.Y : selectionOffset.X;
 
-        Compositor compositor = pipeVisual.Compositor;
+        var compositor = pipeVisual.Compositor;
         // This is required
         var quadraticEaseIn = new QuadraticEaseInOut();
 
         // Create new offset animation between old selection position to the current position
-        Vector3KeyFrameAnimation offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
+        var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
         offsetAnimation.Target = "Offset";
-        string expression = (offset > 0 ? "+" : "-") + Math.Abs(offset);
+        var expression = (offset > 0 ? "+" : "-") + Math.Abs(offset);
         offsetAnimation.InsertExpressionKeyFrame(0f,
             isVerticalOffset
                 ? $"Vector3(this.FinalValue.X, this.FinalValue.Y{expression}, 0)"
@@ -91,7 +90,7 @@ public class SelectingItemsControlExtension
         offsetAnimation.Duration = TimeSpan.FromMilliseconds(250);
 
         // Create small scale animation so the pipe will "stretch" while it's moving
-        Vector3KeyFrameAnimation scaleAnimation = compositor.CreateVector3KeyFrameAnimation();
+        var scaleAnimation = compositor.CreateVector3KeyFrameAnimation();
         scaleAnimation.Target = "Scale";
         scaleAnimation.InsertKeyFrame(0f, Vector3.One, quadraticEaseIn);
         scaleAnimation.InsertKeyFrame(0.5f,
@@ -100,11 +99,11 @@ public class SelectingItemsControlExtension
         scaleAnimation.InsertKeyFrame(1f, Vector3.One, quadraticEaseIn);
         scaleAnimation.Duration = TimeSpan.FromMilliseconds(250);
 
-        CompositionAnimationGroup compositionAnimationGroup = compositor.CreateAnimationGroup();
+        var compositionAnimationGroup = compositor.CreateAnimationGroup();
         compositionAnimationGroup.Add(offsetAnimation);
         compositionAnimationGroup.Add(scaleAnimation);
-        ImplicitAnimationCollection pipeVisualImplicitAnimations = compositor.CreateImplicitAnimationCollection();
-        float currentOffset = isVerticalOffset ? pipeVisual.Offset.Y : pipeVisual.Offset.X;
+        var pipeVisualImplicitAnimations = compositor.CreateImplicitAnimationCollection();
+        var currentOffset = isVerticalOffset ? pipeVisual.Offset.Y : pipeVisual.Offset.X;
         if (currentOffset == 0) // Visual first shown, offset not calculated, lets trigger using Offset
             pipeVisualImplicitAnimations["Offset"] = compositionAnimationGroup;
         else // Visual already shown, we can't trigger on Offset as it won't change
